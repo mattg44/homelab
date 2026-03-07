@@ -30,7 +30,7 @@ jobs:
           kubectl cluster-info
           
           # 4. Apply the manifest
-          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/
           
           # 5. Restart the deployment to pick up the new 'latest' image
           kubectl rollout restart deployment/flask-homelab
