@@ -22,6 +22,6 @@ COPY --from=builder /install /usr/local/lib/python3.11/site-packages
 # Copy your app code
 COPY app.py .
 
-EXPOSE 8080
+EXPOSE 80
 
 CMD ["python", "app.py"]

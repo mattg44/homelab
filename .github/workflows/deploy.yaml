@@ -11,15 +11,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build & Push with UV
+      - name: Build & Push
         run: |
-          # Use BuildKit for the cache mounts to work
-          export DOCKER_BUILDKIT=1
-          docker build -t 192.168.1.38:5000/my-python-app:latest .
-          docker push 192.168.1.38:5000/my-python-app:latest
+          # 1. Build using your UV multi-stage Dockerfile
+          # Pushing to localhost because the Runner is on the Ubuntu host
+          docker build -t localhost:5111/my-python-app:latest .
+          docker push localhost:5111/my-python-app:latest
 
-      - name: Deploy
+      - name: Deploy to K3D
         run: |
-          docker stop my-app || true
-          docker rm my-app || true
-          docker run -d --name my-app -p 8080:8080 --restart always 192.168.1.38:5000/my-python-app:latest
+          # 2. Tell K8s to apply the configuration
+          kubectl apply -f k8s/deployment.yaml
+          
+          # 3. Force a refresh so it pulls the 'latest' image we just pushed
+          kubectl rollout restart deployment/flask-homelab
