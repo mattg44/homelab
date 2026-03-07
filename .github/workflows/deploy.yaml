@@ -20,15 +20,17 @@ jobs:
 
       - name: Deploy to K3D
         run: |
-          # 1. Ensure we are using the K3D config
-          export KUBECONFIG=$HOME/.kube/config
+          # 1. Export the LATEST kubeconfig to a temporary file
+          k3d kubeconfig get homelab > cluster-config.yaml
           
-          # 2. Add a retry/wait for the API server (Discovery fix)
-          kubectl cluster-info || sleep 5
+          # 2. Tell ALL following kubectl commands to use THIS specific file
+          export KUBECONFIG=$(pwd)/cluster-config.yaml
           
-          # 3. Apply with validation disabled if the schema check fails
-          # This bypasses the 'failed to download openapi' error
-          kubectl apply -f k8s/deployment.yaml --validate=false
+          # 3. Double-check the connection
+          kubectl cluster-info
           
-          # 4. Rollout
+          # 4. Apply the manifest
+          kubectl apply -f k8s/deployment.yaml
+          
+          # 5. Restart the deployment to pick up the new 'latest' image
           kubectl rollout restart deployment/flask-homelab
