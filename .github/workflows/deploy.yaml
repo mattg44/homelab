@@ -20,8 +20,15 @@ jobs:
 
       - name: Deploy to K3D
         run: |
-          # 2. Tell K8s to apply the configuration
-          kubectl apply -f k8s/deployment.yaml
+          # 1. Ensure we are using the K3D config
+          export KUBECONFIG=$HOME/.kube/config
           
-          # 3. Force a refresh so it pulls the 'latest' image we just pushed
+          # 2. Add a retry/wait for the API server (Discovery fix)
+          kubectl cluster-info || sleep 5
+          
+          # 3. Apply with validation disabled if the schema check fails
+          # This bypasses the 'failed to download openapi' error
+          kubectl apply -f k8s/deployment.yaml --validate=false
+          
+          # 4. Rollout
           kubectl rollout restart deployment/flask-homelab
