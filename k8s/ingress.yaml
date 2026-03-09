@@ -6,9 +6,10 @@ metadata:
     ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-  - http:
+  - host: python.local
+    http:
       paths:
-      - path: /app
+      - path: /
         pathType: Prefix
         backend:
           service:
